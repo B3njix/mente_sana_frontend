@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Citas - Sistema de Recordatorios</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .status-bar {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ccc;
+        }
+
+        .status-dot.connected {
+            background: #10b981;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #374151;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        h2 {
+            color: #1f2937;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .citas-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .cita-item {
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+
+        .cita-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+        }
+
+        .cita-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+
+        .cita-info h3 {
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+
+        .cita-info p {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 3px;
+        }
+
+        .cita-fecha {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 14px;
+        }
+
+        .badges {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge.enviado {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge.pendiente {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .cita-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #9ca3af;
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .admin-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 968px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗓️ Demo Sistema de Recordatorios</h1>
+        <p class="subtitle">Herramienta de testing para n8n - Citas de Psicología</p>
+
+        <div class="status-bar">
+            <div class="status-indicator">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">Verificando conexión...</span>
+            </div>
+            <button class="btn-secondary btn-small" onclick="testConnection()">🔄 Probar Conexión</button>
+        </div>
+
+        <div class="main-content">
+            <!-- Formulario de creación -->
+            <div class="card">
+                <h2>Crear Cita de Prueba</h2>
+                <form id="citaForm">
+                    <div class="form-group">
+                        <label>Nombre del Paciente</label>
+                        <input type="text" id="nombre" placeholder="Ej: Juan Pérez" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="email" placeholder="juan@ejemplo.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="tel" id="telefono" placeholder="+503 7777-7777" required>
+                    </div>
+
+                    <label>Tipo de Cita (para testing)</label>
+                    <div class="button-group">
+                        <button type="button" class="btn-primary" onclick="crearCita('24h')">
+                            📅 Cita en 24 horas
+                        </button>
+                        <button type="button" class="btn-secondary" onclick="crearCita('2h')">
+                            ⏰ Cita en 2 horas
+                        </button>
+                        <button type="button" class="btn-warning" onclick="crearCita('1h_pasado')">
+                            ⏮️ Cita hace 1 hora (post-cita)
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Lista de citas -->
+            <div class="card">
+                <h2>
+                    Citas Registradas
+                    <span id="citasCount" style="font-size: 14px; color: #6b7280;">(0)</span>
+                </h2>
+                <div class="admin-actions">
+                    <button class="btn-warning btn-small" onclick="resetearTodosFlags()">
+                        🔄 Resetear Todos los Flags
+                    </button>
+                    <button class="btn-danger btn-small" onclick="eliminarTodasCitas()">
+                        🗑️ Eliminar Todas las Citas
+                    </button>
+                </div>
+                <div class="citas-list" id="citasList">
+                    <div class="empty-state">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <p>No hay citas registradas</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://backend-citas-psicologicas.onrender.com/api';
+
+        // Testear conexión al cargar
+        window.addEventListener('load', () => {
+            testConnection();
+            cargarCitas();
+        });
+
+        async function testConnection() {
+            try {
+                const response = await fetch(`${API_URL}/test-connection`);
+                const data = await response.json();
+                
+                const statusDot = document.getElementById('statusDot');
+                const statusText = document.getElementById('statusText');
+                
+                if (data.success) {
+                    statusDot.classList.add('connected');
+                    statusText.textContent = '✅ Conectado a la base de datos';
+                } else {
+                    statusDot.classList.remove('connected');
+                    statusText.textContent = '❌ Error de conexión';
+                }
+            } catch (error) {
+                document.getElementById('statusDot').classList.remove('connected');
+                document.getElementById('statusText').textContent = '❌ No se puede conectar al servidor';
+            }
+        }
+
+        async function crearCita(tipoFecha) {
+            const nombre = document.getElementById('nombre').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const telefono = document.getElementById('telefono').value.trim();
+
+            if (!nombre || !email || !telefono) {
+                alert('Por favor completa todos los campos');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/citas`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nombre, email, telefono, tipoFecha })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('✅ Cita creada exitosamente');
+                    document.getElementById('citaForm').reset();
+                    cargarCitas();
+                } else {
+                    alert('❌ Error: ' + data.message);
+                }
+            } catch (error) {
+                alert('❌ Error al crear la cita: ' + error.message);
+            }
+        }
+
+        async function cargarCitas() {
+            try {
+                const response = await fetch(`${API_URL}/citas`);
+                const data = await response.json();
+
+                const citasList = document.getElementById('citasList');
+                const citasCount = document.getElementById('citasCount');
+
+                if (data.success && data.data.length > 0) {
+                    citasCount.textContent = `(${data.data.length})`;
+                    citasList.innerHTML = data.data.map(cita => {
+                        const fecha = new Date(cita.fecha_cita);
+                        const ahora = new Date();
+                        const diferencia = fecha - ahora;
+                        const horas = Math.round(diferencia / (1000 * 60 * 60));
+                        
+                        let tiempoTexto = '';
+                        if (horas > 0) {
+                            tiempoTexto = `En ${horas} hora(s)`;
+                        } else {
+                            tiempoTexto = `Hace ${Math.abs(horas)} hora(s)`;
+                        }
+
+                        return `
+                            <div class="cita-item">
+                                <div class="cita-header">
+                                    <div class="cita-info">
+                                        <h3>${cita.nombre}</h3>
+                                        <p>📧 ${cita.email}</p>
+                                        <p>📱 ${cita.telefono}</p>
+                                        <p class="cita-fecha">📅 ${fecha.toLocaleString('es-SV')} (${tiempoTexto})</p>
+                                    </div>
+                                </div>
+                                <div class="badges">
+                                    <span class="badge ${cita.recordatorio_24h_enviado ? 'enviado' : 'pendiente'}">
+                                        24h: ${cita.recordatorio_24h_enviado ? '✓ Enviado' : '○ Pendiente'}
+                                    </span>
+                                    <span class="badge ${cita.recordatorio_2h_enviado ? 'enviado' : 'pendiente'}">
+                                        2h: ${cita.recordatorio_2h_enviado ? '✓ Enviado' : '○ Pendiente'}
+                                    </span>
+                                    <span class="badge ${cita.recordatorio_post_enviado ? 'enviado' : 'pendiente'}">
+                                        Post: ${cita.recordatorio_post_enviado ? '✓ Enviado' : '○ Pendiente'}
+                                    </span>
+                                </div>
+                                <div class="cita-actions">
+                                    <button class="btn-warning btn-small" onclick="resetearFlags(${cita.id})">
+                                        🔄 Resetear Flags
+                                    </button>
+                                    <button class="btn-danger btn-small" onclick="eliminarCita(${cita.id})">
+                                        🗑️ Eliminar
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    citasCount.textContent = '(0)';
+                    citasList.innerHTML = `
+                        <div class="empty-state">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <p>No hay citas registradas</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error al cargar citas:', error);
+            }
+        }
+
+        async function eliminarCita(id) {
+            if (!confirm('¿Estás seguro de eliminar esta cita?')) return;
+
+            try {
+                const response = await fetch(`${API_URL}/citas/${id}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('✅ Cita eliminada');
+                    cargarCitas();
+                } else {
+                    alert('❌ Error: ' + data.message);
+                }
+            } catch (error) {
+                alert('❌ Error al eliminar: ' + error.message);
+            }
+        }
+
+        async function resetearFlags(id) {
+            try {
+                const response = await fetch(`${API_URL}/citas/${id}/reset-flags`, {
+                    method: 'PATCH'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('✅ Flags reseteados');
+                    cargarCitas();
+                } else {
+                    alert('❌ Error: ' + data.message);
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        async function resetearTodosFlags() {
+            if (!confirm('¿Resetear los flags de TODAS las citas?')) return;
+
+            try {
+                const response = await fetch(`${API_URL}/citas/reset-flags/all`, {
+                    method: 'PATCH'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('✅ ' + data.message);
+                    cargarCitas();
+                } else {
+                    alert('❌ Error: ' + data.message);
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        async function eliminarTodasCitas() {
+            if (!confirm('⚠️ ¿ELIMINAR TODAS LAS CITAS? Esta acción no se puede deshacer.')) return;
+
+            try {
+                const response = await fetch(`${API_URL}/citas`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('✅ ' + data.message);
+                    cargarCitas();
+                } else {
+                    alert('❌ Error: ' + data.message);
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        // Auto-refresh cada 30 segundos
+        setInterval(cargarCitas, 30000);
+    </script>
+</body>
+</html>
